@@ -40,7 +40,20 @@ $updateStmt = $db->prepare($updateQuery);
 $updateStmt->bindParam(":id", $user['id']);
 
 if ($updateStmt->execute()) {
-    sendResponse(200, 'Email verified successfully');
+    // Get user details for welcome email
+    $userQuery = "SELECT name, email FROM users WHERE id = :id";
+    $userStmt = $db->prepare($userQuery);
+    $userStmt->bindParam(":id", $user['id']);
+    $userStmt->execute();
+    $verifiedUser = $userStmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Send welcome email
+    require_once '../../config/email_config.php';
+    if (sendWelcomeEmail($verifiedUser['email'], $verifiedUser['name'])) {
+        sendResponse(200, 'Email verified successfully. Welcome email sent.');
+    } else {
+        sendResponse(200, 'Email verified successfully. Welcome email could not be sent.');
+    }
 } else {
     sendError(500, 'Verification failed');
 }

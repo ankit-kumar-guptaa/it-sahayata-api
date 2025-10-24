@@ -45,12 +45,33 @@ $stmt->bindParam(":otp", $otp);
 $stmt->bindParam(":otp_expiry", $otp_expiry);
 
 if ($stmt->execute()) {
+    $userId = $db->lastInsertId();
+    
     if (sendOTPEmail($data->email, $data->name, $otp)) {
-        sendResponse(201, 'Registration successful. OTP sent to email.', ['email' => $data->email]);
+        sendResponse(201, 'Registration successful. OTP sent to email for verification.', [
+            'email' => $data->email,
+            'message' => 'Please check your email for the verification OTP',
+            'user_id' => $userId,
+            'next_step' => 'verify_otp'
+        ]);
     } else {
-        sendError(500, 'Failed to send OTP email');
+        // Registration succeeded but email failed - still return success but with warning
+        sendResponse(201, 'Registration successful but OTP email could not be sent. Please contact support.', [
+            'email' => $data->email,
+            'user_id' => $userId,
+            'warning' => 'OTP email delivery failed',
+            'contact_support' => true
+        ]);
     }
 } else {
-    sendError(500, 'Registration failed');
+    // More detailed error handling
+    $errorInfo = $stmt->errorInfo();
+    $errorMessage = 'Registration failed';
+    
+    if (isset($errorInfo[2])) {
+        $errorMessage .= ': ' . $errorInfo[2];
+    }
+    
+    sendError(500, $errorMessage, ['error_details' => $errorInfo]);
 }
 ?>
