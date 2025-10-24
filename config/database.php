@@ -1,10 +1,15 @@
 <?php
 class Database {
-    private $host = "localhost";
-    private $db_name = "it_sahayata";
-    private $username = "root";
-    private $password = "";
+    private $host = "srv1768.hstgr.io";
+    private $db_name = "u634223065_itsahayata_api";
+    private $username = "u634223065_itsahayata_api";
+    private $password = "Ankit@1925@";
     public $conn;
+    // private $host = "localhost";
+    // private $db_name = "it_sahayata";
+    // private $username = "root";
+    // private $password = "";
+    // public $conn;
 
     public function getConnection() {
         $this->conn = null;
