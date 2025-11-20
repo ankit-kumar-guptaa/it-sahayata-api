@@ -28,9 +28,17 @@ $file = $_FILES['file'];
 
 // File validation
 $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'video/mp4'];
+$allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'mp4'];
 $maxSize = 10 * 1024 * 1024; // 10MB
 
-if (!in_array($file['type'], $allowedTypes)) {
+// Get file extension
+$extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+// Validate by both MIME type and file extension (more flexible)
+$isValidMimeType = in_array($file['type'], $allowedTypes);
+$isValidExtension = in_array($extension, $allowedExtensions);
+
+if (!$isValidMimeType && !$isValidExtension) {
     sendError(400, 'Invalid file type. Only JPG, PNG, PDF, MP4 allowed');
 }
 
