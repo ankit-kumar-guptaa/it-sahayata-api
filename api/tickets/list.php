@@ -25,7 +25,7 @@ $db = $database->getConnection();
 
 if ($tokenData['role'] === 'customer') {
     // Customer sees only their tickets
-    $query = "SELECT t.*, u.name as customer_name, u.phone as customer_phone
+    $query = "SELECT t.*, u.name as customer_name, u.phone as customer_phone, t.file_url
               FROM tickets t
               JOIN users u ON t.customer_id = u.id
               WHERE t.customer_id = :user_id
@@ -36,7 +36,7 @@ if ($tokenData['role'] === 'customer') {
     
 } elseif ($tokenData['role'] === 'agent') {
     // Agent sees only assigned tickets
-    $query = "SELECT t.*, u.name as customer_name, u.phone as customer_phone,
+    $query = "SELECT t.*, u.name as customer_name, u.phone as customer_phone, t.file_url,
               a.assigned_at
               FROM tickets t
               JOIN users u ON t.customer_id = u.id
@@ -49,7 +49,7 @@ if ($tokenData['role'] === 'customer') {
     
 } elseif ($tokenData['role'] === 'admin') {
     // Admin sees all tickets
-    $query = "SELECT t.*, u.name as customer_name, u.phone as customer_phone
+    $query = "SELECT t.*, u.name as customer_name, u.phone as customer_phone, t.file_url
               FROM tickets t
               JOIN users u ON t.customer_id = u.id
               ORDER BY t.created_at DESC";

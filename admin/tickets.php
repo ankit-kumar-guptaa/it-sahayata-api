@@ -369,6 +369,7 @@
                             <th>Customer</th>
                             <th>Category</th>
                             <th>Description</th>
+                            <th>Attachments</th>
                             <th>Priority</th>
                             <th>Status</th>
                             <th>Agent</th>
@@ -494,6 +495,15 @@
                 // Get agent name if assigned
                 const assignment = ticket.agent_name || 'Unassigned';
                 
+                // Handle file attachments
+                let attachmentsHtml = 'No files';
+                if (ticket.file_url) {
+                    const fileUrls = ticket.file_url.split(',');
+                    attachmentsHtml = fileUrls.map(url => 
+                        `<a href="${url}" target="_blank" style="display: block; margin-bottom: 2px; color: #007BFF; text-decoration: none; font-size: 12px;">📎 View File</a>`
+                    ).join('');
+                }
+                
                 return `
                     <tr>
                         <td>#${ticket.id}</td>
@@ -502,6 +512,7 @@
                         <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             ${ticket.description}
                         </td>
+                        <td style="max-width: 120px;">${attachmentsHtml}</td>
                         <td><span class="priority-${ticket.priority}">${ticket.priority.toUpperCase()}</span></td>
                         <td><span class="badge badge-${ticket.status}">${ticket.status}</span></td>
                         <td>${assignment}</td>
