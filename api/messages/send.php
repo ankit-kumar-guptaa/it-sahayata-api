@@ -73,10 +73,19 @@ $stmt->bindParam(":file_url", $file_url);
 if ($stmt->execute()) {
     $message_id = $db->lastInsertId();
     
-    sendResponse(201, 'Message sent successfully', [
-        'message_id' => $message_id,
-        'ticket_id' => $data->ticket_id
-    ]);
+    // Get the complete message with sender details
+    $messageQuery = "SELECT m.*, u.name as sender_name, u.role as sender_role
+                      FROM messages m
+                      JOIN users u ON m.sender_id = u.id
+                      WHERE m.id = :message_id";
+    
+    $messageStmt = $db->prepare($messageQuery);
+    $messageStmt->bindParam(":message_id", $message_id);
+    $messageStmt->execute();
+    
+    $messageData = $messageStmt->fetch(PDO::FETCH_ASSOC);
+    
+    sendResponse(201, 'Message sent successfully', $messageData);
 } else {
     sendError(500, 'Failed to send message');
 }

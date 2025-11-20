@@ -32,7 +32,7 @@ $db = $database->getConnection();
 // Get ticket details
 $query = "SELECT t.*, 
           u.name as customer_name, u.email as customer_email, u.phone as customer_phone,
-          a.agent_id, ag.name as agent_name
+          a.agent_id, ag.name as agent_name, t.file_url
           FROM tickets t
           JOIN users u ON t.customer_id = u.id
           LEFT JOIN assignments a ON t.id = a.ticket_id
@@ -65,6 +65,12 @@ $msgStmt->bindParam(":ticket_id", $ticket_id);
 $msgStmt->execute();
 $msgData = $msgStmt->fetch(PDO::FETCH_ASSOC);
 $ticket['messages_count'] = $msgData['msg_count'];
+
+// Convert file_url to file_urls for frontend compatibility
+if (isset($ticket['file_url'])) {
+    $ticket['file_urls'] = $ticket['file_url'];
+    unset($ticket['file_url']);
+}
 
 sendResponse(200, 'Ticket details retrieved', $ticket);
 ?>
