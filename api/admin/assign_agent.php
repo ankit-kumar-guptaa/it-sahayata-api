@@ -2,6 +2,7 @@
 require_once '../../config/database.php';
 require_once '../../utils/jwt_helper.php';
 require_once '../../utils/response.php';
+require_once '../../models/Notification.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendError(405, 'Method not allowed');
@@ -78,9 +79,40 @@ $stmt5 = $db->prepare($updateTicket);
 $stmt5->bindParam(":ticket_id", $data->ticket_id);
 $stmt5->execute();
 
+// Get customer details for notification
+$customerQuery = "SELECT customer_id, customer_name FROM tickets WHERE id = :ticket_id";
+$stmt6 = $db->prepare($customerQuery);
+$stmt6->bindParam(":ticket_id", $data->ticket_id);
+$stmt6->execute();
+$ticket = $stmt6->fetch(PDO::FETCH_ASSOC);
+
+// Send notification to agent
+$notification = new Notification($db);
+$notification->create(
+    'New Ticket Assignment',
+    'You have been assigned to ticket #' . $data->ticket_id . ' by admin',
+    'assignment',
+    'agent',
+    $data->agent_id,
+    $data->ticket_id,
+    json_encode(['assigned_by' => $tokenData['user_id'], 'priority' => 'high'])
+);
+
+// Send notification to customer
+$notification->create(
+    'Agent Assigned to Your Ticket',
+    'An agent has been assigned to your ticket #' . $data->ticket_id . '. You will be contacted shortly.',
+    'assignment',
+    'customer',
+    $ticket['customer_id'],
+    $data->ticket_id,
+    json_encode(['agent_id' => $data->agent_id, 'agent_name' => $agent['name']])
+);
+
 sendResponse(200, $message, [
     'ticket_id' => $data->ticket_id,
     'agent_id' => $data->agent_id,
-    'agent_name' => $agent['name']
+    'agent_name' => $agent['name'],
+    'notifications_sent' => true
 ]);
 ?>

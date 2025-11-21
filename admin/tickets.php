@@ -315,6 +315,7 @@
             <li><a href="users.php"><span>👥</span> All Users</a></li>
             <li><a href="agents.php"><span>👨‍💼</span> Agents</a></li>
             <li><a href="analytics.php"><span>📈</span> Analytics</a></li>
+            <li><a href="notifications.php"><span>🔔</span> Send Notifications</a></li>
         </ul>
     </div>
     
