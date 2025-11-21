@@ -28,7 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             exit();
         }
         
-        $notification = new Notification($pdo);
+        $database = new Database();
+        $db = $database->getConnection();
+        
+        $notification = new Notification($db);
         $notifications = $notification->getNotifications([
             'recipient_type' => $recipient_type,
             'recipient_id' => $recipient_id,

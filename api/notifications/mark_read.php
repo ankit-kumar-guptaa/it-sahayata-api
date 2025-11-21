@@ -28,7 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $recipient_type = $data['recipient_type'] ?? null;
         $recipient_id = $data['recipient_id'] ?? null;
         
-        $notification = new Notification($pdo);
+        $database = new Database();
+        $db = $database->getConnection();
+        
+        $notification = new Notification($db);
         
         if ($mark_all && $recipient_type && $recipient_id) {
             // Mark all notifications as read for this recipient
