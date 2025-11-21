@@ -88,26 +88,30 @@ $ticket = $stmt6->fetch(PDO::FETCH_ASSOC);
 
 // Send notification to agent
 $notification = new Notification($db);
-$notification->create(
-    'New Ticket Assignment',
-    'You have been assigned to ticket #' . $data->ticket_id . ' by admin',
-    'assignment',
-    'agent',
-    $data->agent_id,
-    $data->ticket_id,
-    json_encode(['assigned_by' => $tokenData['user_id'], 'priority' => 'high'])
-);
+$notification->create([
+    'title' => 'New Ticket Assignment',
+    'message' => 'You have been assigned to ticket #' . $data->ticket_id . ' by admin',
+    'type' => 'assignment',
+    'recipient_type' => 'agent',
+    'recipient_id' => $data->agent_id,
+    'related_ticket_id' => $data->ticket_id,
+    'metadata' => json_encode(['assigned_by' => $tokenData['user_id'], 'priority' => 'high']),
+    'is_read' => 0,
+    'created_at' => date('Y-m-d H:i:s')
+]);
 
 // Send notification to customer
-$notification->create(
-    'Agent Assigned to Your Ticket',
-    'An agent has been assigned to your ticket #' . $data->ticket_id . '. You will be contacted shortly.',
-    'assignment',
-    'customer',
-    $ticket['customer_id'],
-    $data->ticket_id,
-    json_encode(['agent_id' => $data->agent_id, 'agent_name' => $agent['name']])
-);
+$notification->create([
+    'title' => 'Agent Assigned to Your Ticket',
+    'message' => 'An agent has been assigned to your ticket #' . $data->ticket_id . '. You will be contacted shortly.',
+    'type' => 'assignment',
+    'recipient_type' => 'customer',
+    'recipient_id' => $ticket['customer_id'],
+    'related_ticket_id' => $data->ticket_id,
+    'metadata' => json_encode(['agent_id' => $data->agent_id, 'agent_name' => $agent['name']]),
+    'is_read' => 0,
+    'created_at' => date('Y-m-d H:i:s')
+]);
 
 sendResponse(200, $message, [
     'ticket_id' => $data->ticket_id,

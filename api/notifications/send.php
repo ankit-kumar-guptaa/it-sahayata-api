@@ -32,8 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $related_ticket_id = $data['related_ticket_id'] ?? null;
         $metadata = $data['metadata'] ?? [];
         
+        // Create database connection
+        $database = new Database();
+        $db = $database->getConnection();
+        
         // Create notification in database
-        $notification = new Notification($pdo);
+        $notification = new Notification($db);
         $notification_id = $notification->create([
             'title' => $title,
             'message' => $message,
