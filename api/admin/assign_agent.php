@@ -4,6 +4,10 @@ require_once '../../utils/jwt_helper.php';
 require_once '../../utils/response.php';
 require_once '../../models/Notification.php';
 
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendError(405, 'Method not allowed');
 }
@@ -87,31 +91,41 @@ $stmt6->execute();
 $ticket = $stmt6->fetch(PDO::FETCH_ASSOC);
 
 // Send notification to agent
-$notification = new Notification($db);
-$notification->create([
-    'title' => 'New Ticket Assignment',
-    'message' => 'You have been assigned to ticket #' . $data->ticket_id . ' by admin',
-    'type' => 'assignment',
-    'recipient_type' => 'agent',
-    'recipient_id' => $data->agent_id,
-    'related_ticket_id' => $data->ticket_id,
-    'metadata' => json_encode(['assigned_by' => $tokenData['user_id'], 'priority' => 'high']),
-    'is_read' => 0,
-    'created_at' => date('Y-m-d H:i:s')
-]);
+try {
+    $notification = new Notification($db);
+    $notification->create([
+        'title' => 'New Ticket Assignment',
+        'message' => 'You have been assigned to ticket #' . $data->ticket_id . ' by admin',
+        'type' => 'assignment',
+        'recipient_type' => 'agent',
+        'recipient_id' => $data->agent_id,
+        'related_ticket_id' => $data->ticket_id,
+        'metadata' => json_encode(['assigned_by' => $tokenData['user_id'], 'priority' => 'high']),
+        'is_read' => 0,
+        'created_at' => date('Y-m-d H:i:s')
+    ]);
+} catch (Exception $e) {
+    // Log notification error but continue
+    error_log("Agent notification error: " . $e->getMessage());
+}
 
 // Send notification to customer
-$notification->create([
-    'title' => 'Agent Assigned to Your Ticket',
-    'message' => 'An agent has been assigned to your ticket #' . $data->ticket_id . '. You will be contacted shortly.',
-    'type' => 'assignment',
-    'recipient_type' => 'customer',
-    'recipient_id' => $ticket['customer_id'],
-    'related_ticket_id' => $data->ticket_id,
-    'metadata' => json_encode(['agent_id' => $data->agent_id, 'agent_name' => $agent['name']]),
-    'is_read' => 0,
-    'created_at' => date('Y-m-d H:i:s')
-]);
+try {
+    $notification->create([
+        'title' => 'Agent Assigned to Your Ticket',
+        'message' => 'An agent has been assigned to your ticket #' . $data->ticket_id . '. You will be contacted shortly.',
+        'type' => 'assignment',
+        'recipient_type' => 'customer',
+        'recipient_id' => $ticket['customer_id'],
+        'related_ticket_id' => $data->ticket_id,
+        'metadata' => json_encode(['agent_id' => $data->agent_id, 'agent_name' => $agent['name']]),
+        'is_read' => 0,
+        'created_at' => date('Y-m-d H:i:s')
+    ]);
+} catch (Exception $e) {
+    // Log notification error but continue
+    error_log("Customer notification error: " . $e->getMessage());
+}
 
 sendResponse(200, $message, [
     'ticket_id' => $data->ticket_id,
